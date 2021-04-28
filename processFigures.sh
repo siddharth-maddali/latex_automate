@@ -1,7 +1,7 @@
 #!/bin/bash
 
-FIGBOOK=./figureBook.pdf
+FIGBOOK=./figureBook
 FIGPREF=figure
 
-pdfcrop $FIGBOOK $FIGBOOK
-pdftoppm $FIGBOOK $FIGPREF -jpeg
+pdfcrop $FIGBOOK.pdf $FIGBOOK.pdf
+pdftoppm $FIGBOOK.pdf $FIGPREF -jpeg
