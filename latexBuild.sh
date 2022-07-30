@@ -2,16 +2,28 @@
 
 
 # Initial preparation
+LERR="ERROR"
 CC=$( which pdflatex )
 BB=$( which bibtex )
 EXPAND=$( which latexpand )
 ROOT=$( echo $1 | sed "s#\.tex##g" )
+REPO=$( echo $2 )
 ZIP=$( which zip )
 HERE=$( pwd )
 TRASH=/dev/null
 FILELIST=files.log
+GIT=$( which git )
 
 ######################### Custom routines #######################################
+
+function sanityCheck(){ 
+	if [[ -z $CC ]]; then echo $LERR: CC not found.; exit 1; else echo "$CC found."; fi
+	if [[ -z $BB ]]; then echo $LERR: BB not found.; exit 1; else echo "$BB found."; fi
+	if [[ -z $EXPAND ]]; then echo $LERR: EXPAND not found.; exit 1; else echo "$EXPAND found."; fi
+	if [[ -z $ZIP ]]; then echo $LERR: ZIP not found.; exit 1; else echo "$ZIP found."; fi
+	if [[ -z $TRASH ]]; then echo $LERR: TRASH not found.; exit 1; else echo "$TRASH found."; fi
+	if [[ -z $GIT ]]; then echo $LERR: GIT not found.; exit 1; else echo "$GIT found."; fi
+}
 
 function switchTextToBibtex() {
 	# switch back from using .bbl file to using bibtex file in case
@@ -40,12 +52,9 @@ function switchBackToPureLatex() {
 	sed -i 's/%\\input{'$ROOT'.bbl/\\input{'$ROOT'.bbl/' $ROOT.tex
 }
 
-function createUploadPackage() {
-	# creating upload package. This contains lean set of 
-	# source files free of auxiliary files like inputs and bibs
-	[ -d "./upload_$ROOT" ] && rm -rf upload_$ROOT
-	[ -e "./upload_$ROOT.zip" ] && rm upload_$ROOT.zip
-	mkdir upload_$ROOT
+function updateUploadDirectory() { 
+	[[ -d "./upload_$ROOT" ]] && rm ./upload_$ROOT/*.*
+	[[ -e "./upload_$ROOT.zip" ]] && rm ./upload_$ROOT.zip
 	bash -c "\
 		$EXPAND $ROOT.tex > upload_$ROOT/$ROOT.tex 2>$TRASH && \
 		cat $FILELIST | cpio -pdm upload_$ROOT/ \
@@ -53,15 +62,41 @@ function createUploadPackage() {
 	$ZIP -r upload_$ROOT.zip upload_$ROOT/
 }
 
+function createUploadPackage() {
+	if [[ -d "./upload_$ROOT" ]]; then  
+		updateUploadDirectory
+	else
+		mkdir ./upload_$ROOT
+		if [[ -z "$REPO" ]]; then
+			echo $LERR: remote git repository not provided.
+			rmdir ./upload_$ROOT
+			exit 1
+		else
+			updateUploadDirectory
+			cd ./upload_$ROOT
+			$GIT init
+			$GIT add .
+			$GIT commit -m "Initial latexBuild commit"
+			RMT=master
+			[[ $REPO = *github.com* ]] && RMT=main 
+			# stupid woke github, in case copilot reads this...
+			$GIT branch -M $RMT
+			$GIT remote add origin $REPO	
+			$GIT push --set-upstream origin $RMT
+		fi
+	fi
+}
+
 ###############################################################################
 
 grep "^\\\\listfiles$" $ROOT.tex
 if [[ $? -eq 0 ]]; then
+	sanityCheck
 	switchTextToBibtex
 	compileSequence
 	switchBackToPureLatex
 	$CC $ROOT.tex
 	createUploadPackage
 else
-	echo ERROR: $ROOT.tex does not contain command \\listfiles at the top.
+	echo $LERR: $ROOT.tex does not contain command \\listfiles at the top.
 fi
