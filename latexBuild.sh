@@ -66,10 +66,8 @@ function createUploadPackage() {
 	if [[ -d "./upload_$ROOT" ]]; then  
 		updateUploadDirectory
 	else
-		mkdir ./upload_$ROOT
 		if [[ -z "$REPO" ]]; then
 			echo $LERR: remote git repository not provided.
-			rmdir ./upload_$ROOT
 			exit 1
 		else
 			$GIT clone $REPO
