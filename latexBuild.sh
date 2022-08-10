@@ -1,6 +1,5 @@
 #!/bin/bash -f
 
-
 # Initial preparation
 LERR="ERROR"
 CC=$( which pdflatex )
@@ -8,6 +7,7 @@ BB=$( which bibtex )
 EXPAND=$( which latexpand )
 ROOT=$( echo $1 | sed "s#\.tex##g" )
 REPO=$( echo $2 )
+NAME=$( echo $REPO | tr '/' '\n' | tail -n1 )
 ZIP=$( which zip )
 HERE=$( pwd )
 TRASH=/dev/null
@@ -72,23 +72,14 @@ function createUploadPackage() {
 			rmdir ./upload_$ROOT
 			exit 1
 		else
+			$GIT clone $REPO
+			mv $NAME upload_$ROOT
 			updateUploadDirectory
-			cd ./upload_$ROOT
-			$GIT init
-			$GIT add .
-			$GIT commit -m "Initial latexBuild commit"
-			RMT=master
-			[[ $REPO = *github.com* ]] && RMT=main 
-			# stupid woke github, in case copilot reads this...
-			$GIT branch -M $RMT
-			$GIT remote add origin $REPO	
-			$GIT push --set-upstream origin $RMT
 		fi
 	fi
 }
 
 ###############################################################################
-
 grep "^\\\\listfiles$" $ROOT.tex
 if [[ $? -eq 0 ]]; then
 	sanityCheck
