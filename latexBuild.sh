@@ -2,6 +2,7 @@
 
 # Initial preparation
 LERR="ERROR"
+LWRN="WARNING"
 CC=$( which pdflatex )
 BB=$( which bibtex )
 EXPAND=$( which latexpand )
@@ -11,18 +12,18 @@ NAME=$( echo $REPO | tr '/' '\n' | tail -n1 )
 ZIP=$( which zip )
 HERE=$( pwd )
 TRASH=/dev/null
-FILELIST=files.log
+FILELIST=files_$ROOT.log
 GIT=$( which git )
 
 ######################### Custom routines #######################################
 
 function sanityCheck(){ 
-	if [[ -z $CC ]]; then echo $LERR: CC not found.; exit 1; else echo "$CC found."; fi
-	if [[ -z $BB ]]; then echo $LERR: BB not found.; exit 1; else echo "$BB found."; fi
-	if [[ -z $EXPAND ]]; then echo $LERR: EXPAND not found.; exit 1; else echo "$EXPAND found."; fi
-	if [[ -z $ZIP ]]; then echo $LERR: ZIP not found.; exit 1; else echo "$ZIP found."; fi
-	if [[ -z $TRASH ]]; then echo $LERR: TRASH not found.; exit 1; else echo "$TRASH found."; fi
-	if [[ -z $GIT ]]; then echo $LERR: GIT not found.; exit 1; else echo "$GIT found."; fi
+	if [[ -z $CC ]]; then echo $LERR: Latex compiler not found.; exit 1; else echo "$CC found."; fi
+	if [[ -z $BB ]]; then echo $LERR: Bibtex not found.; exit 1; else echo "$BB found."; fi
+	if [[ -z $EXPAND ]]; then echo $LERR: Latexpand not found.; exit 1; else echo "$EXPAND found."; fi
+	if [[ -z $ZIP ]]; then echo $LERR: zip not found.; exit 1; else echo "$ZIP found."; fi
+	if [[ -z $TRASH ]]; then echo $LERR: /dev/null not found.; exit 1; else echo "$TRASH found."; fi
+	if [[ -z $GIT ]]; then echo $LERR: git not found.; exit 1; else echo "$GIT found."; fi
 }
 
 function switchTextToBibtex() {
@@ -67,13 +68,13 @@ function createUploadPackage() {
 		updateUploadDirectory
 	else
 		if [[ -z "$REPO" ]]; then
-			echo $LERR: remote git repository not provided.
-			exit 1
+			echo $LWRN: remote git repository not provided.
+			mkdir upload_$ROOT
 		else
 			$GIT clone $REPO
 			mv $NAME upload_$ROOT
-			updateUploadDirectory
 		fi
+		updateUploadDirectory
 	fi
 }
 
