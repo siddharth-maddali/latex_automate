@@ -60,7 +60,7 @@ function updateUploadDirectory() {
 		$EXPAND $ROOT.tex > upload_$ROOT/$ROOT.tex 2>$TRASH && \
 		cat $FILELIST | cpio -pdm upload_$ROOT/ \
 	"
-	$ZIP -r upload_$ROOT.zip upload_$ROOT/
+	$ZIP -r upload_$ROOT.zip upload_$ROOT/ -x upload_$ROOT/.git*
 }
 
 function createUploadPackage() {
