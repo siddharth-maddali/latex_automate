@@ -7,13 +7,16 @@ CC=$( which pdflatex )
 BB=$( which bibtex )
 EXPAND=$( which latexpand )
 ROOT=$( echo $1 | sed "s#\.tex##g" )
-REPO=$( echo $2 )
+REPO=$( echo $3 )
 NAME=$( echo $REPO | tr '/' '\n' | tail -n1 )
 ZIP=$( which zip )
 HERE=$( pwd )
 TRASH=/dev/null
 FILELIST=files_$ROOT.log
 GIT=$( which git )
+
+# user-defined latex compiler
+
 
 ######################### Custom routines #######################################
 
